@@ -1,0 +1,5 @@
+__pycache__
+.venv
+model
+model/mistral-7b-instruct-v0.1.Q3_K_L.gguf
+utils/__pycache__
