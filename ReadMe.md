@@ -93,3 +93,28 @@ Start the server
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `input_text`      | `string` | **Required**. Required. The input text for the query.|
+## Installation
+
+Install PostgreSql with this command
+
+```bash
+    chmod +x scripts/setup_postgres.sh
+```
+
+```bash
+    scripts/setup_postgres.sh -u your_username -p your_postgres_password -s your_sudo_password -d your_database
+```
+    
+## Running Tests
+
+#### To run load tests with 5 incremental users and save the HTML report, run the following command
+
+```bash
+    locust -f tests/load_test.py --headless -u 5 -r 1 --host=http://127.0.0.1:8000 --run-time 5m --html=reports/load_testing_report.html
+```
+
+#### To run unit tests save the HTML report, run the following command
+
+```bash
+    pytest -v --html=reports/test_report.html
+```
