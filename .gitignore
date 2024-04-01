@@ -3,3 +3,5 @@ __pycache__
 model
 model/mistral-7b-instruct-v0.1.Q3_K_L.gguf
 utils/__pycache__
+vectorllm_model/
+vectorllm_tokentizer/

@@ -9,7 +9,7 @@ Dependencies: os, psycopg2
 import os
 import psycopg2
 
-from logger import create_logger
+from .logger import create_logger
 _logger = create_logger("db")
 
 class DatabaseConnector:

@@ -3,7 +3,7 @@ Module Docstring: This module provides a function to query a PostgreSQL
 database using DatabaseConnector.
 """
 # Import dependencies
-from database_connector import DatabaseConnector
+from .database_connector import DatabaseConnector
 
 def query_database(query:str) -> list:
     """
