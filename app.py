@@ -8,9 +8,11 @@ import time
 import logging
 
 from utils.llm import invoke_llm
+from utils.query import query_database
+from utils.logger import create_logger
+
 
 # Setup logging
-from utils.logger import create_logger
 _logger = create_logger("api")
 
 # Define FastAPI application
@@ -71,10 +73,10 @@ async def get_answer(input_text: InputText) -> dict:
         _logger.info("Input text: %s" % text)
         
         # Generate response using the language model
-        answer = invoke_llm(text, llm)
+        query = invoke_llm(text, llm)
         
-        # Log response
-        _logger.info("Response from llama: %s" % answer)
+        # Query database
+        answer = query_database(query)
         
         # Calculate elapsed time
         elapsed_time = time.time() - start_time

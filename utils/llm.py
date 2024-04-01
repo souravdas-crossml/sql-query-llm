@@ -28,23 +28,26 @@ def invoke_llm(text: str, llm: any) -> str:
     """
     
     # Create a PromptTemplate instance
-    template = f"""
+    template = """
             This is the provided text
             {text}
            Just SQL query:
            **Important note : if query is asked and answer is given by model and again if same query is asked dont try to change the answer keep is same**
            """
-    _logger.info("Created PromptTemplate: %s" % template)
+    
+    # Create a PromptTemplate instance
     prompt = PromptTemplate(template=template, input_variables=["text"])
+    _logger.info("================================")
     _logger.info("Created PromptTemplate: %s" % prompt)
-
+    _logger.info("================================")
+    
     # Create the LLMChain
     llm_chain = LLMChain(prompt=prompt, llm=llm)
     _logger.info("Created LLMChain")
 
     # Invoke LangChain to generate SQL query
     sql_query = llm_chain.invoke(text)
-    _logger.info("Generated SQL query: %s" % sql_query)
+    _logger.info("Generated SQL query: %s" % sql_query["text"])
 
     # Convert SQL query to string
     return sql_query['text']
