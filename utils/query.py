@@ -24,7 +24,7 @@ def query_database(query:str) -> list:
 
         # Perform database query
         cursor = db_connector.connection.cursor()
-        cursor.execute()
+        cursor.execute(query)
         result = cursor.fetchall()
 
         # Close cursor
