@@ -1,0 +1,8 @@
+.venv
+docs
+notebooks
+scripts
+tests
+.gitignore
+ReadMe.md
+reports

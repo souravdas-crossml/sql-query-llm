@@ -6,12 +6,12 @@ from pydantic import BaseModel
 from langchain_community.llms import CTransformers
 import time
 import os
-import logging
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from utils.llm import invoke_llm
 from utils.query import query_database
 from utils.logger import create_logger
 from utils.vector_search import VectorQueryFromDirectory
+import textwrap
 
 # Ignore warnings
 import warnings
@@ -143,7 +143,7 @@ async def get_answer(input_text: InputText) -> dict:
         qa = vectorDB.query_vectorDB()
         
         # Query database
-        result=chain(
+        result=qa(
             {"query": text}, 
             return_only_outputs=True
         )
