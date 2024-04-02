@@ -29,11 +29,18 @@ def invoke_llm(text: str, llm: any) -> str:
     
     # Create a PromptTemplate instance
     template = """
-            This is the provided text
-            {text}
-           Just SQL query:
-           **Important note : if query is asked and answer is given by model and again if same query is asked dont try to change the answer keep is same**
-           """
+    You are a Senior Data Engineer. Your main role is to generate postgresSQL query based on User response.
+    I have shared the column names in triple backticks.
+    ''' invoice_id(datatype : varchar), invoice_date(datatype : date),  description(datatype : varchar), quantity(datatype : int), sales(datatype : int),
+    seller_address(datatype : varchar), VAT(datatype : int), net_price(datatype : float), unit_price(datatype : float), seller_name(datatype : varchar),
+    tax_id(datatype : varchar), iban(datatype : iban)'''
+    Table name: real_data
+    users are the customers who want data insights.
+    **Only answer in SQL query**
+    {text}
+    Just SQL query:
+    **Important note : if query is asked and answer is given by model and again if same query is asked dont try to change the answer keep it same**
+    """
     
     # Create a PromptTemplate instance
     prompt = PromptTemplate(template=template, input_variables=["text"])
