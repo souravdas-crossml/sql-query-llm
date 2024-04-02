@@ -33,8 +33,8 @@ llmSQL = CTransformers(
     model = "model/mistral-7b-instruct-v0.1.Q3_K_L.gguf",
     model_type="llama",
     config={
-        'max_new_tokens': 256,  # Set the maximum number of tokens here
-        'temperature': 0.2
+        'max_new_tokens': 512,  # Set the maximum number of tokens here
+        'temperature': 0
     }
 )
 

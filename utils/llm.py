@@ -7,6 +7,7 @@ Dependencies:
 """
 
 # import dependencies
+import re
 from langchain import PromptTemplate
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -54,7 +55,11 @@ def invoke_llm(text: str, llm: any) -> str:
 
     # Invoke LangChain to generate SQL query
     sql_query = llm_chain.invoke(text)
-    _logger.info("Generated SQL query: %s" % sql_query["text"])
+    try:
+        sql_query_str = re.search(r'SELECT.*', sql_query['text'], re.DOTALL).group(0).strip('```').strip()
+        _logger.info("Generated SQL query: %s" % sql_query_str)
+    except AttributeError:
+        _logger.error("No SELECT statement found in the SQL query.")
 
     # Convert SQL query to string
-    return sql_query['text']
+    return sql_query_str
