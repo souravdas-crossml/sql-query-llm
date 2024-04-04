@@ -157,3 +157,5 @@ async def get_answer(input_text: InputText) -> dict:
     except Exception as e:
         # Raise an HTTPException if an error occurs
         raise HTTPException(status_code=500, detail=str(e))
+
+
