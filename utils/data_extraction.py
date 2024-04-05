@@ -1,14 +1,26 @@
 """
 """
-
-import google.generativeai as genai
-from pathlib import Path
 import re
-import json
-import csv
 import os
-GOOGLE_API_KEY="AIzaSyAKQ8_cgU2VzQ_ydN1S4gUs-mi6ObZvGtQ"
-genai.configure(api_key=GOOGLE_API_KEY)
+import json
+from pathlib import Path
+import google.generativeai as genai
+
+from dotenv import load_dotenv, find_dotenv
+
+from logger import create_logger
+from data_pipeline import DBWriter, SQLQueryBuilder, PrepareData
+from database_connector import DatabaseConnector
+
+_logger = create_logger("Gemini")
+
+load_dotenv(find_dotenv())
+api_key = os.getenv('GOOGLE_API_KEY')
+
+#  = os.getenv("GOOGLE_API_KEY")
+_logger.info("API KEY --> %s", str(api_key))
+genai.configure(api_key=api_key)
+
 # Model Configuration
 MODEL_CONFIG = {
   "temperature": 0.2,
@@ -16,6 +28,7 @@ MODEL_CONFIG = {
   "top_k": 32,
   "max_output_tokens": 4096,
 }
+
 ## Safety Settings of Model
 safety_settings = [
   {
@@ -35,9 +48,14 @@ safety_settings = [
     "threshold": "BLOCK_MEDIUM_AND_ABOVE"
   }
 ]
-model = genai.GenerativeModel(model_name = "gemini-pro-vision",
-                              generation_config = MODEL_CONFIG,
-                              safety_settings = safety_settings)
+model = genai.GenerativeModel(
+    model_name = "gemini-pro-vision",
+    generation_config = MODEL_CONFIG,
+    safety_settings = safety_settings
+)
+
+Writer = DBWriter(connector=DatabaseConnector())
+
 def image_format(image_path):
     img = Path(image_path)
     if not img.exists():
@@ -56,7 +74,7 @@ def gemini_output(image_path, system_prompt, user_prompt):
     json_data = re.sub(r'```', '', response.text)
     json_data = re.sub(r'json', '', json_data)
     json_data= json.loads(
-    json_data
+      json_data
     )
     return json_data
 system_prompt = """
@@ -75,13 +93,38 @@ def get_files_from_folder(folder_path):
         if os.path.isfile(os.path.join(folder_path, file_name)):
             files.append(file_name)
     return files
-# Example usage:
-folder_path = 'invoices_images'
-files_in_folder = get_files_from_folder(folder_path)
-for i in files_in_folder:
-    print(str(i))
-    output = gemini_output("invoice_images/"+str(i), system_prompt, user_prompt)
-    print(output)
-    collection = db['invoice_data']
-    insert_result = collection.insert_one(output)
-    print("Inserted ID:", insert_result.inserted_id)
+
+
+def main():
+  data = []
+
+  folder_path = '/home/barkha/sql_langchain/sql-query-llm/invoice_pdf'
+  files = get_files_from_folder(folder_path)
+
+  for file in files:
+      output = gemini_output(folder_path+"/"+str(file), system_prompt, user_prompt)
+      data.append(output)
+
+  records = PrepareData(data)
+
+  SQLstring = SQLQueryBuilder.build_insert_query(
+      table_name = "public.invoice_data",
+      columns = ("invoice_id", "invoice_date", "seller_name",
+                 "seller_address", "seller_taxid", "seller_iban",
+                 "client_name", "client_address", "client_taxid",
+                 "item_name", "quantity", "unit_measure", "net_price",
+                 "net_worth", "vat", "sales"
+                 ),
+                 )
+  
+  for record in records:
+    _logger.info("Record to be inserted: %s", str(record))
+    Writer.insert_data(
+        query=SQLstring,
+        data=record
+    )
+
+
+  
+if __name__ == "__main__":
+    main()

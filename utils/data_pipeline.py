@@ -1,5 +1,9 @@
 """
 """
+from typing import List, Tuple
+from database_connector import DatabaseConnector
+from logger import create_logger
+_logger = create_logger("DBWriter")
 
 class DBWriter:
     """
@@ -26,7 +30,7 @@ class DBWriter:
         try:
             self.connector.create_connection()
             cursor = self.connector.connection.cursor()
-            cursor.executemany(query, data)
+            cursor.execute(query, data)
             self.connector.connection.commit()
             _logger.info("Data inserted successfully")
         except Exception as e:
@@ -37,6 +41,7 @@ class DBWriter:
             if cursor:
                 cursor.close()
             self.connector.close_connection()
+
 
 
 class SQLQueryBuilder:
@@ -62,54 +67,54 @@ class SQLQueryBuilder:
         return query
 
 
-class DataProcessor:
-    """
-    This class provides methods for preparing data inin the specified schema.
-    """
-    def __init__(self, mergedData: List[Dict[str, str]]) -> None:
-        """_summary_
 
-        Args:
-            schema (Dict[str, str]): _description_
-            mergedData (List[Dict[str, str]]): _description_
-        """
-        self.mergedData = mergedData
-        
-        def _prepare_data(self)->List[Dict[str, str]]:
-            """_summary_
+def PrepareData(mergedData) -> List[Tuple[str]]:
+    data = []
+    for item in mergedData:
+        # Extract relevant information
+        invoice_no = item.get('invoice_no', '')
+        date_of_issue = item.get('date_of_issue', '')
+        seller_name = item.get('seller', {}).get('name', '')
+        seller_address = item.get('seller', {}).get('address', '')
+        seller_tax_id = item.get('seller', {}).get('tax_id', '')  
+        seller_iban = item.get('seller', {}).get('iban', '')  
+        client_name = item.get('client', {}).get('name', '')
+        client_address = item.get('client', {}).get('address', '')
+        client_tax_id = item.get('client', {}).get('tax_id', '')  
 
-            Returns:
-                List[Dict[str, str]]: _description_
-            """
-            data = []
-            for item in merged_json:
-                # Extract relevant information
-                invoice_no = item.get('invoice_no', '')
-                date_of_issue = item.get('date_of_issue', '')
-                seller_name = item.get('seller', {}).get('name', '')
-                seller_address = item.get('seller', {}).get('address', '')
-                seller_tax_id = item.get('seller', {}).get('tax_id', '')  # Remove .get() method
-                seller_iban = item.get('seller', {}).get('iban', '')  # Use .get() method to handle missing key
-                client_name = item.get('client', {}).get('name', '')
-                client_address = item.get('client', {}).get('address', '')
-                client_tax_id = item.get('client', {}).get('tax_id', '')  # Use .get() method to handle missing key
-                # Iterate over each item in the 'items' list
-                for item_info in item.get('items', []):
-                    data.append({
-                        'Invoice No.': invoice_no,
-                        'Date of Issue': date_of_issue,
-                        'Seller Name': seller_name,
-                        'Seller Address': seller_address,
-                        'Seller Tax ID': seller_tax_id,
-                        'Seller IBAN': seller_iban,
-                        'Client Name': client_name,
-                        'Client Address': client_address,
-                        'Client Tax ID': client_tax_id,
-                        'Description': item_info.get('description', ''),
-                        'Quantity': item_info.get('quantity', ''),
-                        'Unit of Measure': item_info.get('unit_of_measure', ''),
-                        'Net Price': item_info.get('net_price', ''),
-                        'Net Worth': item_info.get('net_worth', ''),
-                        'VAT': item_info.get('vat', ''),
-                        'Gross Worth': item_info.get('gross_worth', '')
-                    })
+        # Iterate over each item in the 'items' list
+        for item_info in item.get('items', []):
+            invoice_tuple_data = (
+                invoice_no,
+                date_of_issue,
+                seller_name,
+                seller_address,
+                seller_tax_id,
+                seller_iban,
+                client_name,
+                client_address,
+                client_tax_id,
+                item_info.get('description', ''),
+                item_info.get('quantity', ''),
+                item_info.get('unit_of_measure', ''),
+                item_info.get('net_price', ''),
+                item_info.get('net_worth', ''),
+                item_info.get('vat', ''),
+                item_info.get('gross_worth', '')
+            )
+            invoice_tuple_data = replace_empty_with_null(invoice_tuple_data)
+            data.append(invoice_tuple_data)
+
+    return data
+
+def replace_empty_with_null(input_tuple):
+    """
+    Replace empty strings in a tuple with NULL.
+
+    Args:
+        input_tuple (tuple): Input tuple to be processed.
+
+    Returns:
+        tuple: Tuple with empty strings replaced by NULL.
+    """
+    return tuple(None if value == '' else value for value in input_tuple)

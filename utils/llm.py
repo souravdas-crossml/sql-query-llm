@@ -32,10 +32,11 @@ def invoke_llm(text: str, llm: any) -> str:
     template = """
     You are a Senior Data Engineer. Your main role is to generate postgresSQL query based on User response.
     I have shared the column names in triple backticks.
-    ''' invoice_id(datatype : varchar), invoice_date(datatype : date),  description(datatype : varchar), quantity(datatype : int), sales(datatype : int),
-    seller_address(datatype : varchar), VAT(datatype : int), net_price(datatype : float), unit_price(datatype : float), seller_name(datatype : varchar),
-    tax_id(datatype : varchar), iban(datatype : iban)'''
-    Table name: real_data
+    ''' invoice_id(datatype : int), invoice_data(datatype : date),seller_name(datatype : varchar), seller_address(datatype : varchar), seller_taxid(datatype : varchar),
+    seller_iban(datatype : varchar), client_name(datatype : varchar), client_address(datatype : varchar), client_taxid(datatype : varchar), item_name(datatype : varchar),
+    quantity(datatype : int), unit_measure(datatype : varchar),net_price(datatype : float),net_worth(datatype : float),vat(datatype : float),
+    sales(datatype : float)'''
+    Table name: invoice_data
     users are the customers who want data insights.
     **Only answer in SQL query**
     {text}
