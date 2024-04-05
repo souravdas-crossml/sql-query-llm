@@ -9,6 +9,7 @@ from langchain.chains import LLMChain
 from langchain.chains.query_constructor import parser
 from langchain_community.llms import CTransformers
 from abc import ABC, abstractmethod
+from langchain_core.output_parsers import StrOutputParser
 
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
@@ -82,10 +83,6 @@ Here is the description to determine what each key represents:
       - **vat_total**: VAT total amount.
       - **gross_total**: Gross total amount.
 """
-
-input_variable = [
-            "user_message", 
-        ]
             
 template = """
     Create a MongoDB raw query for the following user question: 
@@ -139,13 +136,13 @@ llm = CTransformers(
 #         """Create and return LLM Chain"""
 #         pass
     
-# class Response(BaseModel):
-#   query: list = Field(description="It must be a list")
+class Response(BaseModel):
+  query: list = Field(description="It must be a list")
 
-#   def to_dict(self):
-#     return self.query
+  def to_dict(self):
+    return self.query
 
-# parser = PydanticOutputParser(pydantic_object=Response)
+parser = PydanticOutputParser(pydantic_object=Response)
 
 class MongoQueryBuilder:
     def __init__(self, llm, payload) -> None:
@@ -156,11 +153,15 @@ class MongoQueryBuilder:
         return template
 
     def input_variables(self) -> List[str]:
-        return 
+        return [
+            "user_message",
+            "schema_description",
+            "table_schema"
+        ]
         
     def populate_partial_variables(self, payload: dict) -> dict:
         return {
-            "user_message": payload["question"],
+            "user_message": payload["user_message"],
             "schema_description": schema_description,
             "table_schema" : table_schema
         }
@@ -177,9 +178,8 @@ class MongoQueryBuilder:
             prompt=chain_prompt,
         )
         
-        mongo_query = query_builder_agent.invoke_chain(payload["user_message"])
-        return str(mongo_query)
-
+        mongo_query = query_builder_agent.invoke(payload["user_message"])
+        return parser.parse(mongo_query).to_dict()
 
 # Example payload for query generation
 payload = {
