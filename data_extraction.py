@@ -8,7 +8,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv, find_dotenv
 
 from utils.logger import create_logger
-from utils.data_pipeline import DBWriter, SQLQueryBuilder, PrepareData
+from utils.data_pipeline import DBWriter, SQLQueryBuilder, DataParser
 from utils.database_connector import DatabaseConnector
 
 
@@ -54,6 +54,7 @@ model = genai.GenerativeModel(
 )
 
 Writer = DBWriter(connector=DatabaseConnector())
+Parser = DataParser()
 
 
 def image_format(image_path):
@@ -95,33 +96,45 @@ def get_files_from_folder(folder_path):
     return files
 
 def main(folder_path):
-  data = []
+  
   files = get_files_from_folder(folder_path)
+  
+  invoice_info_SQLstring = SQLQueryBuilder.build_insert_query(
+    table_name = "public.invoice_info",
+    columns = (
+      "invoice_id", "invoice_date", "seller_name",
+      "seller_address", "seller_taxid", "seller_iban",
+      "client_name", "client_address", "client_taxid"
+    )
+  )
+  
+  invoice_items_SQLstring = SQLQueryBuilder.build_insert_query(
+    table_name="invoice_items",
+    columns=(
+      "item_name", "quantity", "unit_measure", "net_price",
+      "net_worth", "vat", "sales"
+    )
+  )
 
   for file in files:
-      _logger.info("File path %s",os.path.join(folder_path, file))
-      output = gemini_output(os.path.join(folder_path, file), system_prompt, user_prompt)
-      data.append(output)
-
-  records = PrepareData(data)
-
-  SQLstring = SQLQueryBuilder.build_insert_query(
-      table_name = "public.invoice_data",
-      columns = ("invoice_id", "invoice_date", "seller_name",
-                 "seller_address", "seller_taxid", "seller_iban",
-                 "client_name", "client_address", "client_taxid",
-                 "item_name", "quantity", "unit_measure", "net_price",
-                 "net_worth", "vat", "sales"
-                 ),
-                 )
-  
-  for record in records:
-    _logger.info("Record to be inserted: %s", str(record))
+      
+    _logger.info("File path %s",os.path.join(folder_path, file))
+    output = gemini_output(os.path.join(folder_path, file), system_prompt, user_prompt)
+    _logger.info("Record to be inserted: %s", str(output))
+    
+    record = Parser.ParseData(output)
+    
     Writer.insert_data(
-        query=SQLstring,
-        data=record
+      queries_data=[
+        (invoice_info_SQLstring, record[0]),
+        (invoice_items_SQLstring, record[1])
+      ]
     )
+    _logger.info("Data inserted successfully")
+    
+  
 
+  
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process PDF files containing invoice data.")
     parser.add_argument("folder_path", type=str, help="Path to the folder containing PDF files.")
