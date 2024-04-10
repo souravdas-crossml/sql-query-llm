@@ -99,7 +99,7 @@ class DataParser:
     
     """
         
-    def extract_items(self, data: Dict) -> Dict[str, any, List[Dict[str, any]]]:
+    def extract_items(self, data: Dict):
         """
         Extracts invoice details and items from the provided data dictionary.
 
@@ -116,16 +116,15 @@ class DataParser:
             "seller_name": data["seller_name"],
             "seller_address": data["seller_address"],
             "seller_tax_id": data["seller_tax_id"],
-            "invoice_iban": data["invoice_iban"]
+            "invoice_iban": data["invoice_iban"],
+            "total_tax": data["total_tax"],
+            "total": data["total"]
         }
-        
-        items = data["items"]
-        total = data["Total"]
-        
-        # Flatten Total and add to invoice_details
-        for key, value in total.items():
-            invoice_details[f"{key}"] = value
-        
+        try:
+            items = data["items"]
+        except:
+            items = data["item"]
+
         return invoice_details, items
     
     def ParseData(self, data: Dict) -> Union[Tuple, Tuple]:
@@ -150,7 +149,7 @@ class DataParser:
         vat = invoice_details.get('vat', '')
         gross_worth = invoice_details.get('gross_worth', '')
         
-        invoice_info = replace_empty_with_null(
+        invoice_info = self.replace_empty_with_null(
             (
                 invoice_no, 
                 date_of_issue, 
@@ -182,7 +181,7 @@ class DataParser:
                 self.replace_empty_with_null(item_tuple)
             )
         
-        return tuple([invoice_info], item_list)
+        return ([invoice_info], item_list)
 
     def replace_empty_with_null(self, input_tuple):
         """

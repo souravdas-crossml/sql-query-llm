@@ -77,15 +77,24 @@ def gemini_output(image_path, system_prompt, user_prompt):
     json_data = re.sub(r'```', '', response.candidates[0].content.parts[0].text)
     json_data = re.sub(r'json', '', json_data)
     json_data= json.loads(json_data)
-    return [json_data]
+    return json_data
 system_prompt = """
                You are a specialist in comprehending receipts.
                Input images in the form of receipts will be provided to you,
                and your task is to respond to questions based on the content of the input image.
                """
-#system_prompt = "Convert Invoice data into json format with appropriate json tags as required for the data in image "
-# image_path = ["invoices_images/invoice_50_charspace_51_1.jpg","invoices_images/invoice_0_charspace_1_1.jpg", "invoices_images/invoice_1_charspace_2_1.jpg"]
-user_prompt = "Convert Invoice data into json format with appropriate json tags as required for the data in image "
+user_prompt="""
+retrieve these values: invoice number, invoice date, client name, client address and tax ID, seller name, 
+seller address and tax ID, invoice iban, names of invoice items included into this invoice, gross worth value 
+for each invoice item from the table, total tax total.format response as following 
+\"invoice_number\": {}, \"invoice_date\": {}, {\"client_name\": {}, \"client_address\": {}, 
+\"client_tax_id\": {}, \", \"seller_name\": {},\"seller_address\": {},\"seller_tax_id\": {}, 
+\"invoice_iban\": {}, \"item\": [{"description": "description or name of the item that has been bougth", 
+"quantity":"total number of each item", "unit":"unit for measurement", "net_price":"price of each item", 
+"net_worth":"multiple of quantity and net_price", "tax":"tax or vat" ,"gross_worth": "how much does the item cost"}], 
+\"total_tax\": {}, \"total\": {}}"
+"""
+
 def get_files_from_folder(folder_path):
     files = []
     # Iterate over all files in the folder
