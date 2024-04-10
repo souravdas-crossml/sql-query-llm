@@ -9,8 +9,12 @@ Dependencies: os, psycopg2
 import os
 import psycopg2
 
+from dotenv import load_dotenv, find_dotenv
+
 from .logger import create_logger
 _logger = create_logger("db")
+
+load_dotenv(find_dotenv())
 
 class DatabaseConnector:
     """
@@ -48,6 +52,7 @@ class DatabaseConnector:
             "database": database
         }
         self.connection = None
+        _logger.info("Connection parameter: %s", self.conn_params)
 
     def create_connection(self) -> None:
         """
