@@ -1,8 +1,8 @@
 """
 """
 from typing import List, Tuple
-from database_connector import DatabaseConnector
-from logger import create_logger
+from .database_connector import DatabaseConnector
+from .logger import create_logger
 _logger = create_logger("DBWriter")
 
 class DBWriter:
