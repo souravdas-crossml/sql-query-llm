@@ -31,12 +31,16 @@ def invoke_llm(text: str, llm: any) -> str:
     # Create a PromptTemplate instance
     template = """
     You are a Senior Data Engineer. Your main role is to generate postgresSQL query based on User response.
-    I have shared the column names in triple backticks.
-    ''' invoice_id(datatype : int), invoice_data(datatype : date),seller_name(datatype : varchar), seller_address(datatype : varchar), seller_taxid(datatype : varchar),
-    seller_iban(datatype : varchar), client_name(datatype : varchar), client_address(datatype : varchar), client_taxid(datatype : varchar), item_name(datatype : varchar),
-    quantity(datatype : int), unit_measure(datatype : varchar),net_price(datatype : float),net_worth(datatype : float),vat(datatype : float),
+    we are having two tables first table name is invoice_info which contains columns name which is given in triple backticks.
+    '''invoice_id(datatype : int)which is primary_key of table,invoice_date(datatype : date),seller_name(datatype : varchar), seller_address(datatype : varchar), seller_taxid(datatype : varchar),
+    seller_iban(datatype : varchar), client_name(datatype : varchar), client_address(datatype : varchar), client_taxid(datatype : varchar),
+    total(datatype : int)'''
+    Second table name is invoice_items which contains columns name which is given in triple backticks.
+    '''item_id(datatype : int) which is primary key of table, invoice_id(datatype : int) which is forigen key in this table,quantity(datatype : int), unit_measure(datatype : varchar),net_price(datatype : float),net_worth(datatype : float),vat(datatype : float),
     sales(datatype : float)'''
-    Table name: invoice_data
+    If customers ask question related to invoice try to make correct postgresSQL query and if there is question which includes both the table information try 
+    to use joins using both the tables.
+    For date time question make use of appropriate date functions used in postgresSQL for queries related to date or time.
     users are the customers who want data insights.
     **Only answer in SQL query**
     {text}
