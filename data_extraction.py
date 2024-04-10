@@ -7,9 +7,9 @@ import google.generativeai as genai
 
 from dotenv import load_dotenv, find_dotenv
 
-from logger import create_logger
-from data_pipeline import DBWriter, SQLQueryBuilder, PrepareData
-from database_connector import DatabaseConnector
+from utils.logger import create_logger
+from utils.data_pipeline import DBWriter, SQLQueryBuilder, PrepareData
+from utils.database_connector import DatabaseConnector
 
 
 
@@ -72,10 +72,11 @@ def gemini_output(image_path, system_prompt, user_prompt):
     image_info = image_format(image_path)
     input_prompt= [system_prompt, image_info[0], user_prompt]
     response = model.generate_content(input_prompt)
-    json_data = re.sub(r'```', '', response.text)
+    _logger.info("Gemini output  %s", response)
+    json_data = re.sub(r'```', '', response.candidates[0].content.parts[0].text)
     json_data = re.sub(r'json', '', json_data)
     json_data= json.loads(json_data)
-    return json_data
+    return [json_data]
 system_prompt = """
                You are a specialist in comprehending receipts.
                Input images in the form of receipts will be provided to you,

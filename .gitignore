@@ -6,3 +6,4 @@ utils/__pycache__
 vectorllm_model/
 vectorllm_tokentizer/
 .env
+invoice_pdf
