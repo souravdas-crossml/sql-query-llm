@@ -113,14 +113,16 @@ def main(folder_path):
     columns = (
       "invoice_id", "invoice_date", "seller_name",
       "seller_address", "seller_taxid", "seller_iban",
-      "client_name", "client_address", "client_taxid"
+      "client_name", "client_address", "client_taxid",
+      "total_tax", "total"
     )
   )
+  
   
   invoice_items_SQLstring = SQLQueryBuilder.build_insert_query(
     table_name="invoice_items",
     columns=(
-      "item_name", "quantity", "unit_measure", "net_price",
+      "invoice_id", "item_name", "quantity", "unit_measure", "net_price",
       "net_worth", "vat", "sales"
     )
   )
