@@ -17,6 +17,7 @@ _logger = create_logger("Gemini")
 
 load_dotenv(find_dotenv())
 api_key = os.getenv('GOOGLE_API_KEY')
+_logger.info("Google API key-> %s", api_key)
 
 genai.configure(api_key=api_key)
 
@@ -111,10 +112,9 @@ def main(folder_path):
   invoice_info_SQLstring = SQLQueryBuilder.build_insert_query(
     table_name = "public.invoice_info",
     columns = (
-      "invoice_id", "invoice_date", "seller_name",
-      "seller_address", "seller_taxid", "seller_iban",
-      "client_name", "client_address", "client_taxid",
-      "total_tax", "total"
+      "invoice_id", "invoice_date", "seller_name", "seller_address", 
+      "seller_taxid", "seller_iban", "client_name", "client_address", 
+      "client_taxid", "total_tax", "total"
     )
   )
   
@@ -123,7 +123,7 @@ def main(folder_path):
     table_name="invoice_items",
     columns=(
       "invoice_id", "item_name", "quantity", "unit_measure", "net_price",
-      "net_worth", "vat", "sales"
+      "net_worth", "vat"
     )
   )
 
@@ -134,13 +134,26 @@ def main(folder_path):
     _logger.info("Record to be inserted: %s", str(output))
     
     record = Parser.ParseData(output)
+
+    _logger.info("Invoice info: %s", record[0])
+    _logger.info("Invoice items: %s", record[1])
     
-    Writer.insert_data(
-      queries_data=[
-        (invoice_info_SQLstring, record[0]),
-        (invoice_items_SQLstring, record[1])
-      ]
+    # Writer.insert_data(
+    #   queries_data=[
+    #     (invoice_info_SQLstring, record[0]),
+    #     (invoice_items_SQLstring, record[1])
+    #   ]
+    # )
+
+    Writer.insert_single_query_data(
+        query=invoice_info_SQLstring,
+        data=record[0]
     )
+    for i in record[1]:
+      Writer.insert_single_query_data(
+          query=invoice_items_SQLstring,
+          data=i
+      )
     _logger.info("Data inserted successfully")
     
   

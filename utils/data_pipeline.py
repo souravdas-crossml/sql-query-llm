@@ -54,6 +54,7 @@ class DBWriter:
         try:
             self.connector.create_connection()
             cursor = self.connector.connection.cursor()
+            _logger.info("Length of tuple: %s", len(data))
             cursor.execute(query, data)
             self.connector.connection.commit()
             _logger.info("Data inserted successfully")
@@ -145,7 +146,6 @@ class DataParser:
         client_name = invoice_details.get('client_name', '')
         client_address = invoice_details.get('client_address', '')
         client_tax_id = invoice_details.get('client_tax_id', '')
-        net_worth = invoice_details.get('net_worth', '')
         vat = invoice_details.get('vat', '')
         gross_worth = invoice_details.get('gross_worth', '')
         
@@ -160,7 +160,6 @@ class DataParser:
                 client_name, 
                 client_address, 
                 client_tax_id, 
-                net_worth, 
                 vat, 
                 gross_worth
             )
@@ -170,6 +169,7 @@ class DataParser:
         item_tuple = ()
         for item in items:
             item_tuple = (
+                invoice_no,
                 item["description"],
                 item["quantity"],
                 item["unit"],
@@ -181,7 +181,7 @@ class DataParser:
                 self.replace_empty_with_null(item_tuple)
             )
         
-        return ([invoice_info], item_list)
+        return (invoice_info, item_list)
 
     def replace_empty_with_null(self, input_tuple):
         """
