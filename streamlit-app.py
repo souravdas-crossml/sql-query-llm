@@ -45,7 +45,7 @@ invoice_items_SQLstring = SQLQueryBuilder.build_insert_query(
     table_name="invoice_items",
     columns=(
         "invoice_id", "item_name", "quantity", "unit_measure", "net_price",
-        "sales", "vat"
+        "net_worth", "vat", "sales"
     )
 )
 
