@@ -27,9 +27,11 @@ llmSQL = CTransformers(
     model_type="llama",
     config={
         'max_new_tokens': 512,  # Set the maximum number of tokens here
-        'temperature': 0
+        'temperature': 0,
     }
 )
+
+
 
 invoice_info_SQLstring = SQLQueryBuilder.build_insert_query(
     table_name = "public.invoice_info",
@@ -119,7 +121,7 @@ def main():
 
         answer = query_database(query)
 
-        st.write(f"Anwser: {answer}")
+        st.json(answer)
 
 
 
