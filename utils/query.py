@@ -4,6 +4,9 @@ database using DatabaseConnector.
 """
 # Import dependencies
 from .database_connector import DatabaseConnector
+from .logger import create_logger
+
+_logger = create_logger("query")
 
 def query_database(query:str) -> list:
     """
@@ -25,12 +28,13 @@ def query_database(query:str) -> list:
         # Perform database query
         cursor = db_connector.connection.cursor()
         cursor.execute(query)
-        result = cursor.fetchall()
-
+        r = [dict((cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in cursor.fetchall()]
+        
         # Close cursor
         cursor.close()
 
-        return result
+        return r
 
     finally:
         # Close connection

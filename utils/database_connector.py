@@ -52,7 +52,7 @@ class DatabaseConnector:
             "database": database
         }
         self.connection = None
-        _logger.info("Connection parameter: %s", self.conn_params)
+        # _logger.info("Connection parameter: %s", self.conn_params)
 
     def create_connection(self) -> None:
         """

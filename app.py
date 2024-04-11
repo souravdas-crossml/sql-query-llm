@@ -3,7 +3,7 @@
 # Import dependencies
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict
 from langchain_community.llms import CTransformers
 import time
 import os
@@ -26,7 +26,8 @@ app = FastAPI(swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"})
 
 # Define Pydantic models for input and output
 class InputText(BaseModel):
-    text: str
+    text: str # Required - User input query (string)
+    
 
 # Initialize the language model for SQL queries.
 llmSQL = CTransformers(
@@ -82,7 +83,7 @@ def test_connection() -> dict:
     
 # Define SQL Query API endpoint
 @app.post("/sqlQuery")
-async def get_answer(input_text: InputText) -> dict:
+async def get_answer(input_text: InputText) -> Dict:
     """
     Endpoint to generate an answer using Llama 2 model.
 

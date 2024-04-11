@@ -17,7 +17,7 @@ _logger = create_logger("Gemini")
 
 load_dotenv(find_dotenv())
 api_key = os.getenv('GOOGLE_API_KEY')
-_logger.info("Google API key-> %s", api_key)
+# _logger.info("Google API key-> %s", api_key)
 
 genai.configure(api_key=api_key)
 
@@ -85,16 +85,16 @@ system_prompt = """
                and your task is to respond to questions based on the content of the input image.
                """
 user_prompt="""
-retrieve these values: invoice number, invoice date, client name, client address and tax ID, seller name, 
-seller address and tax ID, invoice iban, names of invoice items included into this invoice, gross worth value 
-for each invoice item from the table, total tax total.format response as following 
-\"invoice_number\": {}, \"invoice_date\": {}, {\"client_name\": {}, \"client_address\": {}, 
-\"client_tax_id\": {}, \", \"seller_name\": {},\"seller_address\": {},\"seller_tax_id\": {}, 
-\"invoice_iban\": {}, \"item\": [{"description": "description or name of the item that has been bougth", 
-"quantity":"total number of each item", "unit":"unit for measurement", "net_price":"price of each item", 
-"net_worth":"multiple of quantity and net_price", "tax":"tax or vat" ,"gross_worth": "how much does the item cost"}], 
-\"total_tax\": {}, \"total\": {}}"
-"""
+              retrieve these values: invoice number, invoice date, client name, client address and tax ID, seller name, 
+              seller address and tax ID, invoice iban, names of invoice items included into this invoice, gross worth value 
+              for each invoice item from the table, total tax total.format response as following 
+              \"invoice_number\": {}, \"invoice_date\": {}, {\"client_name\": {}, \"client_address\": {}, 
+              \"client_tax_id\": {}, \", \"seller_name\": {},\"seller_address\": {},\"seller_tax_id\": {}, 
+              \"invoice_iban\": {}, \"item\": [{"description": "description or name of the item that has been bougth", 
+              "quantity":"total number of each item", "unit":"unit for measurement", "net_price":"price of each item", 
+              "net_worth":"multiple of quantity and net_price", "tax":"tax or vat" ,"gross_worth": "how much does the item cost"}], 
+              \"total_tax\": {}, \"total\": {}}"
+              """
 
 def get_files_from_folder(folder_path):
     files = []
@@ -110,52 +110,48 @@ def main(folder_path):
   files = get_files_from_folder(folder_path)
   
   invoice_info_SQLstring = SQLQueryBuilder.build_insert_query(
-    table_name = "public.invoice_info",
-    columns = (
-      "invoice_id", "invoice_date", "seller_name", "seller_address", 
-      "seller_taxid", "seller_iban", "client_name", "client_address", 
-      "client_taxid", "total_tax", "total"
-    )
+      table_name = "public.invoice_info",
+      columns = (
+          "invoice_id", "invoice_date", "seller_name", "seller_address", 
+          "seller_taxid", "seller_iban", "client_name", "client_address", 
+          "client_taxid", "total_tax", "total"
+      )
   )
-  
-  
+
+
   invoice_items_SQLstring = SQLQueryBuilder.build_insert_query(
-    table_name="invoice_items",
-    columns=(
-      "invoice_id", "item_name", "quantity", "unit_measure", "net_price",
-      "net_worth", "vat"
-    )
+      table_name="invoice_items",
+      columns=(
+          "invoice_id", "item_name", "quantity", "unit_measure", "net_price",
+          "net_worth", "vat", "sales"
+      )
   )
 
   for file in files:
+
+    try:
+      _logger.info("File path %s",os.path.join(folder_path, file))
+      output = gemini_output(os.path.join(folder_path, file), system_prompt, user_prompt)
+      _logger.info("Record to be inserted: %s", str(output))
       
-    _logger.info("File path %s",os.path.join(folder_path, file))
-    output = gemini_output(os.path.join(folder_path, file), system_prompt, user_prompt)
-    _logger.info("Record to be inserted: %s", str(output))
-    
-    record = Parser.ParseData(output)
+      record = Parser.ParseData(output)
 
-    _logger.info("Invoice info: %s", record[0])
-    _logger.info("Invoice items: %s", record[1])
-    
-    # Writer.insert_data(
-    #   queries_data=[
-    #     (invoice_info_SQLstring, record[0]),
-    #     (invoice_items_SQLstring, record[1])
-    #   ]
-    # )
+      _logger.info("Invoice info: %s", record[0])
+      _logger.info("Invoice items: %s", record[1])
 
-    Writer.insert_single_query_data(
-        query=invoice_info_SQLstring,
-        data=record[0]
-    )
-    for i in record[1]:
       Writer.insert_single_query_data(
-          query=invoice_items_SQLstring,
-          data=i
+          query=invoice_info_SQLstring,
+          data=record[0]
       )
-    _logger.info("Data inserted successfully")
-    
+      for i in record[1]:
+        Writer.insert_single_query_data(
+            query=invoice_items_SQLstring,
+            data=i
+        )
+      _logger.info("Data inserted successfully")
+    except Exception as e:
+      _logger.error("Error: %s", e)
+      pass
   
 
   
