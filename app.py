@@ -3,6 +3,7 @@
 # Import dependencies
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 from langchain_community.llms import CTransformers
 import time
 import os
@@ -23,9 +24,8 @@ _logger = create_logger("api")
 # Define FastAPI application
 app = FastAPI(swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"})
 
-# Define request body model
+# Define Pydantic models for input and output
 class InputText(BaseModel):
-    """Request body model for input text."""
     text: str
 
 # Initialize the language model for SQL queries.

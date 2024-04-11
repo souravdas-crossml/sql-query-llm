@@ -146,8 +146,8 @@ class DataParser:
         client_name = invoice_details.get('client_name', '')
         client_address = invoice_details.get('client_address', '')
         client_tax_id = invoice_details.get('client_tax_id', '')
-        vat = invoice_details.get('vat', '')
-        gross_worth = invoice_details.get('gross_worth', '')
+        vat = invoice_details.get('total_tax', '')
+        gross_worth = invoice_details.get('total', '')
         
         invoice_info = self.replace_empty_with_null(
             (
@@ -175,6 +175,7 @@ class DataParser:
                 item["unit"],
                 item["net_price"],
                 item["net_worth"],
+                item["tax"],
                 item["gross_worth"]
             )
             item_list.append(
